@@ -9,31 +9,54 @@ const LANG = {
       badge: "Terpercaya Sejak 2023",
       title: "PT Buana Perkasa",
       titleBold: "Solusindo",
-      tagline: "Solusi Terpadu untuk Konstruksi, Konsultasi & Properti",
-      desc: "Kami hadir sebagai mitra bisnis terpercaya Anda dalam bidang konstruksi, konsultan bisnis, properti, dan perizinan di seluruh Indonesia.",
+      tagline: "Solusi Terpadu Konstruksi, Konsultasi Bisnis, Properti, Perizinan & Legalitas Usaha",
+      desc: "Kami hadir sebagai mitra bisnis terpercaya yang memberikan solusi terpadu dalam bidang konstruksi, konsultan bisnis, properti, perizinan, serta pengurusan legalitas usaha bagi individu maupun perusahaan di seluruh Indonesia.",
       cta1: "Hubungi Kami", cta2: "Lihat Portofolio"
     },
     about: {
       label: "Tentang Perusahaan",
       title: "Mitra Bisnis <span>Terpercaya</span> Anda",
-      p1: "PT Buana Perkasa Solusindo adalah perusahaan profesional yang bergerak di bidang konstruksi, konsultan bisnis, properti, dan perizinan. Dengan pengalaman lebih dari satu dekade, kami telah melayani ratusan klien dari berbagai sektor industri.",
+      p1: "PT Buana Perkasa Solusindo adalah perusahaan profesional yang bergerak di bidang konstruksi, konsultan bisnis, properti, dan perizinan serta Legalitas usaha. Dengan pengalaman lebih dari 3 tahun, kami telah melayani puluhan klien dari berbagai sektor industri.",
       p2: "Kami berkomitmen menghadirkan solusi terbaik yang terukur, efisien, dan berorientasi pada hasil nyata bagi setiap mitra bisnis kami.",
       cta: "Hubungi Tim Kami",
       stats: [
-        { num: "150+", label: "Proyek Selesai" },
-        { num: "200+", label: "Klien Puas" },
-        { num: "14+",  label: "Tahun Pengalaman" },
-        { num: "45+",  label: "Tenaga Ahli" }
+        { num: "50+", label: "Proyek Selesai" },
+        { num: "50+", label: "Klien Puas" },
+        { num: "3+",  label: "Tahun Pengalaman" },
+        { num: "10+",  label: "Tenaga Ahli" }
       ]
     },
     services: {
       label: "Layanan Kami",
       title: "Solusi Lengkap untuk <span>Bisnis Anda</span>",
       items: [
-        { icon: "🏗️", title: "Konstruksi",        desc: "Perencanaan, pelaksanaan, dan pengawasan proyek konstruksi skala kecil hingga besar dengan standar kualitas tertinggi dan tepat waktu." },
-        { icon: "💼", title: "Konsultan Bisnis",   desc: "Pendampingan strategi bisnis, analisis pasar, optimasi operasional, dan pengembangan organisasi secara komprehensif dan terukur." },
-        { icon: "🏢", title: "Property Consultant",desc: "Konsultasi properti komersial dan residensial, valuasi aset, serta manajemen investasi properti secara profesional dan transparan." },
-        { icon: "📋", title: "Perizinan",          desc: "Pengurusan izin usaha, IMB, SIUP, TDP, dan berbagai perizinan lainnya secara cepat, tepat, legal, dan terpercaya." }
+        {
+          icon: "🏗️", title: "Konstruksi",
+          badge: "Sudah memiliki SBU BG009",
+          desc: "Perencanaan, pelaksanaan, dan pengawasan proyek konstruksi skala kecil hingga besar dengan standar kualitas tertinggi dan tepat waktu.",
+          details: ["Konstruksi Bangunan Gedung", "Renovasi & Rehabilitasi Gedung", "Konstruksi Sipil & Infrastruktur", "Manajemen Proyek Konstruksi"]
+        },
+        {
+          icon: "💼", title: "Konsultan Bisnis",
+          desc: "Pendampingan strategi bisnis, analisis pasar, optimasi operasional, dan pengembangan organisasi secara komprehensif dan terukur.",
+          details: ["Strategi & Perencanaan Bisnis", "Analisis Pasar & Kompetitor", "Optimasi Operasional", "Pengembangan Organisasi"]
+        },
+        {
+          icon: "🏢", title: "Property Consultant",
+          desc: "Konsultasi properti komersial dan residensial, valuasi aset, serta manajemen investasi properti secara profesional dan transparan.",
+          details: ["Konsultasi Properti Komersial", "Valuasi & Appraisal Aset", "Manajemen Investasi Properti", "Analisis Kelayakan Properti"]
+        },
+        {
+          icon: "📋", title: "Pengurusan Legalitas",
+          desc: "Layanan pengurusan legalitas usaha, perizinan, dan sertifikasi secara lengkap, cepat, tepat, dan terpercaya untuk berbagai jenis badan usaha.",
+          details: [
+            "Akta Pendirian PT, CV, Yayasan & Koperasi",
+            "Perizinan PBG (Persetujuan Bangunan Gedung) & SLF",
+            "Sertifikasi Badan Usaha (SBU)",
+            "Sertifikat Kompetensi Kerja (SKK)",
+            "Pengurusan TKDN, ISO, Halal & SNI"
+          ]
+        }
       ]
     },
     legality: {
@@ -61,7 +84,7 @@ const LANG = {
       service: "Pilih Layanan", message: "Pesan / Deskripsi Kebutuhan",
       send: "Kirim Pesan", sending: "Mengirim...",
       success: "✅ Pesan berhasil dikirim! Kami akan menghubungi Anda segera.",
-      services: ["Konstruksi", "Konsultan Bisnis", "Property Consultant", "Perizinan"],
+      services: ["Konstruksi", "Konsultan Bisnis", "Property Consultant", "Pengurusan Legalitas"],
       info: [
         { icon: "📍", label: "Alamat",         val: "Jl. MT Haryono Kav. 27, Tebet Timur, Tebet, Jakarta Selatan" },
         { icon: "📞", label: "Telepon",         val: "+62 851 6252 8109" },
@@ -76,7 +99,7 @@ const LANG = {
         company: "Perusahaan",
         companyLinks: ["Tentang Kami", "Tim Kami", "Karir", "Berita"],
         services: "Layanan",
-        serviceLinks: ["Konstruksi", "Konsultan Bisnis", "Property Consultant", "Perizinan"]
+        serviceLinks: ["Konstruksi", "Konsultan Bisnis", "Property Consultant", "Pengurusan Legalitas"]
       }
     }
   },
@@ -87,31 +110,54 @@ const LANG = {
       badge: "Trusted Since 2023",
       title: "PT Buana Perkasa",
       titleBold: "Solusindo",
-      tagline: "Integrated Solutions for Construction, Consulting & Property",
-      desc: "We are your trusted business partner in construction, business consulting, property, and licensing across Indonesia.",
+      tagline: "Integrated Solutions for Construction, Business Consulting, Property, Licensing & Business Legality",
+      desc: "We are here as a trusted business partner that provides integrated solutions in the fields of construction, business consulting, property, licensing, and business legality management for individuals and companies throughout Indonesia.",
       cta1: "Contact Us", cta2: "View Portfolio"
     },
     about: {
       label: "About Us",
       title: "Your Trusted <span>Business Partner</span>",
-      p1: "PT Buana Perkasa Solusindo is a professional company specializing in construction, business consulting, property, and licensing. With over a decade of experience, we have served hundreds of clients across various industry sectors.",
+      p1: "PT Buana Perkasa Solusindo is a professional company specializing in construction, business consulting, property, and licensing. With over three years of experience, we have served dozens of clients across various industry sectors.",
       p2: "We are committed to delivering the best measurable, efficient, and results-oriented solutions for every one of our business partners.",
       cta: "Contact Our Team",
       stats: [
-        { num: "150+", label: "Projects Completed" },
-        { num: "200+", label: "Happy Clients" },
-        { num: "14+",  label: "Years Experience" },
-        { num: "45+",  label: "Expert Staff" }
+        { num: "50+", label: "Projects Completed" },
+        { num: "50+", label: "Happy Clients" },
+        { num: "3+",  label: "Years Experience" },
+        { num: "10+",  label: "Expert Staff" }
       ]
     },
     services: {
       label: "Our Services",
       title: "Complete Solutions for <span>Your Business</span>",
       items: [
-        { icon: "🏗️", title: "Construction",      desc: "Planning, execution, and supervision of construction projects from small to large scale with the highest quality standards and on-time delivery." },
-        { icon: "💼", title: "Business Consulting",desc: "Business strategy guidance, market analysis, operational optimization, and comprehensive organizational development." },
-        { icon: "🏢", title: "Property Consultant",desc: "Commercial and residential property consulting, asset valuation, and professional property investment management." },
-        { icon: "📋", title: "Licensing",          desc: "Processing business permits, building permits, SIUP, TDP, and various other permits quickly, accurately, legally, and reliably." }
+        {
+          icon: "🏗️", title: "Construction",
+          badge: "Already have SBU BG009",
+          desc: "Planning, execution, and supervision of construction projects from small to large scale with the highest quality standards and on-time delivery.",
+          details: ["Building Construction", "Renovation & Building Rehabilitation", "Civil & Infrastructure Construction", "Construction Project Management"]
+        },
+        {
+          icon: "💼", title: "Business Consulting",
+          desc: "Business strategy guidance, market analysis, operational optimization, and comprehensive organizational development.",
+          details: ["Business Strategy & Planning", "Market & Competitor Analysis", "Operational Optimization", "Organizational Development"]
+        },
+        {
+          icon: "🏢", title: "Property Consultant",
+          desc: "Commercial and residential property consulting, asset valuation, and professional property investment management.",
+          details: ["Commercial Property Consulting", "Asset Valuation & Appraisal", "Property Investment Management", "Property Feasibility Analysis"]
+        },
+        {
+          icon: "📋", title: "Legality & Licensing",
+          desc: "Complete business legality, licensing, and certification services — fast, accurate, and reliable for all types of business entities.",
+          details: [
+            "Deed of Establishment for PT, CV, Foundation & Cooperative",
+            "PBG (Building Approval) & SLF Permits",
+            "Business Entity Certificate (SBU)",
+            "Work Competency Certificate (SKK)",
+            "TKDN, ISO, Halal & SNI Certification"
+          ]
+        }
       ]
     },
     legality: {
@@ -139,7 +185,7 @@ const LANG = {
       service: "Select Service", message: "Message / Project Description",
       send: "Send Message", sending: "Sending...",
       success: "✅ Message sent successfully! We will contact you shortly.",
-      services: ["Construction", "Business Consulting", "Property Consultant", "Licensing"],
+      services: ["Construction", "Business Consulting", "Property Consultant", "Legality & Licensing"],
       info: [
         { icon: "📍", label: "Address",      val: "Jl. MT Haryono Kav. 27, Tebet Timur, Tebet, South Jakarta" },
         { icon: "📞", label: "Phone",        val: "+62 851 6252 8109" },
@@ -154,7 +200,7 @@ const LANG = {
         company: "Company",
         companyLinks: ["About Us", "Our Team", "Career", "News"],
         services: "Services",
-        serviceLinks: ["Construction", "Business Consulting", "Property Consultant", "Licensing"]
+        serviceLinks: ["Construction", "Business Consulting", "Property Consultant", "Legality & Licensing"]
       }
     }
   }
@@ -241,8 +287,16 @@ function renderServices(t) {
   document.getElementById("services-grid").innerHTML = t.services.items.map((s, i) => `
     <div class="service-card anim anim-delay-${i+1}">
       <span class="service-icon">${s.icon}</span>
-      <div class="service-title">${s.title}</div>
+      <div class="service-title">
+        ${s.title}
+        ${s.badge ? `<span style="display:inline-block;margin-left:8px;background:#CC1E1E;color:white;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;letter-spacing:0.05em;vertical-align:middle">${s.badge}</span>` : ""}
+      </div>
       <p class="service-desc">${s.desc}</p>
+      ${s.details ? `<ul style="margin-top:12px;padding-left:0;list-style:none;display:flex;flex-direction:column;gap:6px">
+        ${s.details.map(d => `<li style="display:flex;align-items:flex-start;gap:8px;font-size:13px;color:#555;line-height:1.4">
+          <span style="color:#CC1E1E;font-size:10px;margin-top:4px;flex-shrink:0">▶</span>${d}
+        </li>`).join("")}
+      </ul>` : ""}
       <div class="service-line"></div>
     </div>`).join("");
   initScrollAnim();
