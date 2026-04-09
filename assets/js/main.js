@@ -93,7 +93,7 @@ const LANG = {
       ]
     },
     footer: {
-      tagline: "Solusi terpadu untuk konstruksi, konsultasi, dan properti Indonesia.",
+      tagline: "Solusi terpadu untuk konstruksi, konsultasi, properti, dan pengurusan legalitas di Indonesia.",
       rights: "Hak Cipta Dilindungi",
       links: {
         company: "Perusahaan",
@@ -194,7 +194,7 @@ const LANG = {
       ]
     },
     footer: {
-      tagline: "Integrated solutions for construction, consulting, and property in Indonesia.",
+      tagline: "Integrated solutions for construction, consulting, property, and legal administration in Indonesia.",
       rights: "All Rights Reserved",
       links: {
         company: "Company",
