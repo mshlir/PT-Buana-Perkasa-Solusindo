@@ -1,43 +1,67 @@
-# PT Buana Perkasa Solusindo — Website Company Profile
-### Versi Final — Siap Deploy ke Netlify
+# PT Buana Perkasa Solusindo — Website
 
-## 📁 Struktur Folder
+Website company profile PT Buana Perkasa Solusindo dengan Supabase sebagai backend.
+
+---
+
+## Perbaikan Versi Ini
+
+### 1. Admin CRUD Lengkap (admin.html)
+- ✅ **Tambah** dokumen & proyek (sudah ada sebelumnya)
+- ✅ **Edit** dokumen — tombol ✏️ Edit membuka modal, bisa ubah nama, kategori, masa berlaku, akses, dan ganti file PDF
+- ✅ **Edit** proyek — tombol ✏️ Edit membuka modal, bisa ubah semua field dan tambah foto baru
+- ✅ **Hapus** dokumen & proyek (sudah ada sebelumnya)
+- ✅ **Sembunyikan/Tampilkan** proyek (toggle is_active)
+
+### 2. Dokumen Legalitas Tampil untuk Publik (supabase.js)
+- ✅ Dokumen SBU/SKK sekarang tampil di halaman website **tanpa perlu admin login**
+- ✅ Penyebab sebelumnya: konflik RLS policy antara `FOR SELECT` (anon) dan `FOR ALL` (authenticated)
+- ✅ Solusi: pisahkan policy SELECT (anon + authenticated) dan policy write (authenticated saja)
+
+---
+
+## Langkah Setup
+
+### A. Jalankan SQL di Supabase
+1. Buka [Supabase Dashboard](https://app.supabase.com) → project Anda
+2. Klik **SQL Editor**
+3. Jalankan seluruh isi file `supabase-schema.sql`
+   - Script ini akan **hapus policy lama** dan buat ulang yang benar
+   - Gunakan `DROP POLICY IF EXISTS` sehingga aman dijalankan ulang
+
+### B. Storage Bucket
+Pastikan bucket `buana-files` sudah ada dan bersifat **public**:
+1. Supabase Dashboard → **Storage**
+2. Buat bucket `buana-files` jika belum ada
+3. Centang **Public bucket** agar file PDF dan foto bisa diakses publik
+
+### C. Deploy
+Upload semua file ke hosting (Netlify, Vercel, atau web hosting biasa).
+
+---
+
+## Struktur File
+
 ```
 buana-perkasa-solusindo/
-├── index.html                  ← Halaman utama
-├── 404.html                    ← Halaman error (auto-redirect 10 detik)
-├── admin.html                  ← Dashboard admin
-├── sitemap.xml                 ← SEO sitemap
-├── robots.txt                  ← Panduan mesin pencari
-├── netlify.toml                ← Konfigurasi Netlify
-├── supabase-schema.sql         ← Script database
+├── index.html              ← Halaman utama (publik)
+├── admin.html              ← Dashboard admin (perlu login)
 ├── assets/
 │   ├── css/style.css
-│   ├── js/main.js & supabase.js
-│   └── images/ (logo + favicon)
-└── pages/portfolio-detail.html
+│   ├── js/
+│   │   ├── main.js         ← Logic utama website
+│   │   └── supabase.js     ← Integrasi Supabase (dokumen, portfolio, kontak)
+│   └── images/
+├── pages/
+│   └── portfolio-detail.html
+├── supabase-schema.sql     ← Schema DB + RLS policy (jalankan di SQL Editor)
+└── netlify.toml
 ```
 
-## 🚀 Deploy ke Netlify
-1. Daftar di https://netlify.com
-2. "Add new site" → "Deploy manually"
-3. Drag & drop folder ini → selesai!
+---
 
-## 🔌 Setup Supabase
-1. Daftar di https://supabase.com
-2. Jalankan `supabase-schema.sql` di SQL Editor
-3. Buat storage bucket `buana-files` (public)
-4. Copy URL & anon key → paste ke `supabase.js`, `admin.html`, `portfolio-detail.html`
-5. Buat akun admin di Authentication → Users
+## Admin Login
 
-## 📱 Ganti Nomor WhatsApp
-Cari `62XXXXXXXXXXX` di `index.html` dan `portfolio-detail.html`
-Ganti format: 0812-3456-7890 → 6281234567890
+Buat user admin di Supabase Dashboard → **Authentication** → **Users** → **Add User**.
 
-## ✅ Checklist Sebelum Launch
-- [ ] Supabase URL & key diisi di 3 file
-- [ ] Nomor WhatsApp diisi
-- [ ] Konten (alamat, email, telp) diisi di main.js
-- [ ] Dokumen SBU & SKK diupload via admin.html
-- [ ] Foto portofolio diupload via admin.html
-- [ ] URL domain di sitemap.xml sudah diupdate
+URL admin: `https://domain-anda.com/admin.html`
