@@ -1,1067 +1,186 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Admin Dashboard — PT Buana Perkasa Solusindo</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <style>
-    :root {
-      --blue:   #1A3A8F;
-      --blue-d: #0f2460;
-      --red:    #CC1E1E;
-      --green:  #16a34a;
-      --bg:     #F0F2F8;
-      --white:  #FFFFFF;
-      --gray:   #6b7280;
-      --border: #E5E7EB;
-      --dark:   #111827;
-      --sidebar-w: 240px;
-    }
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--dark); min-height: 100vh; }
-    img { max-width: 100%; display: block; }
+// PT BUANA PERKASA SOLUSINDO - Supabase Integration
 
-    /* ── LOGIN ── */
-    .login-wrap { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
-    .login-card { background: white; border-radius: 16px; padding: 40px 36px; width: 100%; max-width: 420px; box-shadow: 0 8px 40px rgba(26,58,143,0.12); }
-    .login-logo { text-align: center; margin-bottom: 28px; }
-    .login-logo img { height: 52px; margin: 0 auto 8px; }
-    .login-logo-name { font-size: 17px; font-weight: 700; color: var(--blue); }
-    .login-logo-sub { font-size: 10px; color: var(--red); font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; }
-    .login-title { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
-    .login-sub { font-size: 13px; color: var(--gray); margin-bottom: 24px; }
-    .form-group { margin-bottom: 14px; }
-    .form-label { font-size: 13px; font-weight: 600; margin-bottom: 5px; display: block; }
-    .form-input { width: 100%; padding: 11px 14px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 14px; font-family: inherit; outline: none; transition: border 0.2s; }
-    .form-input:focus { border-color: var(--blue); }
-    textarea.form-input { resize: vertical; }
-    .form-select { width: 100%; padding: 10px 14px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 14px; font-family: inherit; outline: none; background: white; transition: border 0.2s; }
-    .form-select:focus { border-color: var(--blue); }
-    .btn { border: none; border-radius: 8px; font-family: inherit; cursor: pointer; font-weight: 600; transition: all 0.2s; }
-    .btn-primary { background: var(--blue); color: white; padding: 13px; width: 100%; font-size: 15px; }
-    .btn-primary:hover { background: var(--blue-d); }
-    .btn-danger  { background: var(--red); color: white; padding: 7px 14px; font-size: 12px; border-radius: 6px; }
-    .btn-danger:hover  { background: #a01515; }
-    .btn-success { background: var(--green); color: white; padding: 8px 16px; font-size: 13px; }
-    .btn-success:hover { background: #15803d; }
-    .btn-warning { background: #f59e0b; color: white; padding: 7px 14px; font-size: 12px; border-radius: 6px; }
-    .btn-warning:hover { background: #d97706; }
-    .btn-outline { background: transparent; border: 1.5px solid var(--border); color: var(--dark); padding: 7px 14px; font-size: 12px; border-radius: 6px; }
-    .btn-outline:hover { border-color: var(--blue); color: var(--blue); }
-    .btn-block { width: 100%; padding: 12px; font-size: 14px; }
-    .error-msg { background: #fef2f2; border: 1px solid #fca5a5; color: var(--red); padding: 10px 14px; border-radius: 8px; font-size: 13px; margin-bottom: 14px; display: none; }
+const SUPABASE_URL = "https://zcaggwwdqugjwrnkrxyv.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpjYWdnd3dkcXVnandybmtyeHl2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI4NjcyMDAsImV4cCI6MjA4ODQ0MzIwMH0.pQaA1nF610JDX35bmmedOlD-FptmTwCUL5Fqg4G15EU";
 
-    /* ── LAYOUT ── */
-    .admin-layout { display: flex; min-height: 100vh; }
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    /* ── SIDEBAR ── */
-    .sidebar { width: var(--sidebar-w); background: var(--blue); display: flex; flex-direction: column; position: fixed; top: 0; left: 0; bottom: 0; z-index: 200; transition: transform 0.3s ease; }
-    .sidebar-brand { padding: 20px 18px; border-bottom: 1px solid rgba(255,255,255,0.1); }
-    .sidebar-brand-name { font-size: 14px; font-weight: 700; color: white; }
-    .sidebar-brand-sub { font-size: 10px; color: rgba(255,255,255,0.45); text-transform: uppercase; letter-spacing: 0.1em; margin-top: 2px; }
-    .sidebar-nav { padding: 14px 10px; flex: 1; overflow-y: auto; }
-    .nav-section { font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.3); letter-spacing: 0.12em; text-transform: uppercase; padding: 8px 8px 4px; }
-    .nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 8px; cursor: pointer; margin-bottom: 2px; color: rgba(255,255,255,0.65); font-size: 13.5px; font-weight: 500; transition: all 0.2s; border: none; background: none; width: 100%; text-align: left; }
-    .nav-item:hover { background: rgba(255,255,255,0.1); color: white; }
-    .nav-item.active { background: rgba(255,255,255,0.15); color: white; font-weight: 600; }
-    .nav-item-icon { font-size: 16px; width: 20px; text-align: center; flex-shrink: 0; }
-    .sidebar-logout { padding: 14px 10px; border-top: 1px solid rgba(255,255,255,0.1); }
-    .logout-btn { display: flex; align-items: center; gap: 10px; width: 100%; border: none; background: rgba(204,30,30,0.2); color: rgba(255,255,255,0.8); padding: 10px 12px; border-radius: 8px; cursor: pointer; font-size: 13px; font-family: inherit; font-weight: 500; transition: all 0.2s; }
-    .logout-btn:hover { background: rgba(204,30,30,0.4); color: white; }
+// ============================================================
+// DOCUMENTS - SBU & SKK  (bisa diakses publik tanpa login)
+// ============================================================
 
-    /* ── SIDEBAR OVERLAY (mobile) ── */
-    .sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 150; backdrop-filter: blur(2px); }
-    .sidebar-overlay.open { display: block; }
+async function fetchDocuments() {
+  // Gunakan anon key — RLS policy "Public read documents" USING (true) membolehkan ini
+  // Pastikan di Supabase: policy SELECT untuk anon role sudah aktif
+  var result = await sb.from("documents").select("*").order("category").order("title");
+  if (result.error) { console.error("fetchDocuments:", result.error); return []; }
+  return result.data;
+}
 
-    /* ── MAIN CONTENT ── */
-    .main-content { margin-left: var(--sidebar-w); flex: 1; padding: 24px; min-width: 0; }
+async function loadDocuments() {
+  var docs = await fetchDocuments();
+  var grid = document.getElementById("legality-grid");
+  if (!grid) return;
 
-    /* ── TOPBAR ── */
-    .topbar { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; flex-wrap: wrap; }
-    .topbar-left { display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0; }
-    .hamburger { display: none; border: none; background: white; border-radius: 8px; width: 40px; height: 40px; align-items: center; justify-content: center; font-size: 18px; cursor: pointer; flex-shrink: 0; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
-    .page-title { font-size: 20px; font-weight: 700; color: var(--dark); }
-    .admin-badge { background: rgba(26,58,143,0.1); color: var(--blue); padding: 6px 12px; border-radius: 20px; font-size: 11px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px; }
+  var t = (typeof LANG !== "undefined") ? LANG[currentLang || "id"] : null;
+  var viewText     = t ? t.legality.view     : "Lihat";
+  var dlText       = t ? t.legality.download : "Unduh PDF";
+  var placeholder  = t ? t.legality.placeholder : "Dokumen akan tersedia setelah upload oleh admin";
+  var lang         = currentLang || "id";
 
-    /* ── STATS ── */
-    .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 24px; }
-    .stat-card { background: white; border-radius: 12px; padding: 18px 20px; box-shadow: 0 1px 6px rgba(0,0,0,0.06); }
-    .stat-num { font-size: 28px; font-weight: 700; color: var(--blue); }
-    .stat-label { font-size: 11px; color: var(--gray); font-weight: 500; margin-top: 3px; }
+  var sbu = docs.filter(function(d) { return d.category === "SBU"; });
+  var skk = docs.filter(function(d) { return d.category === "SKK"; });
 
-    /* ── CARDS ── */
-    .card { background: white; border-radius: 12px; box-shadow: 0 1px 6px rgba(0,0,0,0.06); margin-bottom: 20px; overflow: hidden; }
-    .card-header { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
-    .card-title { font-size: 14px; font-weight: 700; }
-    .card-body { padding: 20px; }
+  function renderCat(items, color, icon, title) {
+    var rows = items.map(function(doc) {
+      return '<div class="doc-item">' +
+        '<div class="doc-item-name">&#128196; ' + doc.title +
+          (doc.valid_until ? '<span style="font-size:11px;color:#aaa;margin-left:8px;">s/d ' +
+            new Date(doc.valid_until).toLocaleDateString("id-ID") + '</span>' : '') +
+        '</div>' +
+        '<div class="doc-item-actions">' +
+          '<button class="doc-btn-view" onclick="viewDoc(\'' + (doc.file_url || '') + '\')">&#128065; ' + viewText + '</button>' +
+          (doc.is_public && doc.file_url
+            ? '<a href="' + doc.file_url + '" target="_blank" download><button class="doc-btn-dl ' + color + '">&#8595; ' + dlText + '</button></a>'
+            : '<button class="doc-btn-dl ' + color + '" style="opacity:0.4;cursor:not-allowed">&#8595; ' + dlText + '</button>') +
+        '</div>' +
+      '</div>';
+    }).join("");
 
-    /* ── FORM GRID ── */
-    .form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
-    .form-row-1 { margin-bottom: 14px; }
-
-    /* ── UPLOAD ZONE ── */
-    .upload-zone { border: 2px dashed var(--border); border-radius: 10px; padding: 28px 20px; text-align: center; cursor: pointer; transition: all 0.2s; }
-    .upload-zone:hover, .upload-zone.dragover { border-color: var(--blue); background: #eff3ff; }
-    .upload-zone-icon { font-size: 32px; margin-bottom: 6px; }
-    .upload-zone-text { font-size: 13px; color: var(--gray); }
-    .upload-zone-text strong { color: var(--blue); }
-    .upload-zone-hint { font-size: 11px; color: #bbb; margin-top: 4px; }
-    .upload-selected { margin-top: 8px; font-size: 12px; color: var(--blue); font-weight: 600; }
-
-    /* ── PROGRESS ── */
-    .progress-bar { height: 5px; background: #e5e7eb; border-radius: 3px; margin-top: 10px; display: none; }
-    .progress-fill { height: 100%; background: var(--blue); border-radius: 3px; width: 0%; transition: width 0.3s; }
-
-    /* ── TABLE ── */
-    .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-    .data-table { width: 100%; border-collapse: collapse; min-width: 560px; }
-    .data-table th { text-align: left; font-size: 10px; font-weight: 700; color: var(--gray); text-transform: uppercase; letter-spacing: 0.08em; padding: 10px 14px; background: #f9fafb; border-bottom: 1px solid var(--border); white-space: nowrap; }
-    .data-table td { padding: 12px 14px; font-size: 13px; border-bottom: 1px solid var(--border); vertical-align: middle; }
-    .data-table tr:last-child td { border-bottom: none; }
-    .data-table tr:hover td { background: #f9fafb; }
-    .action-btns { display: flex; gap: 6px; flex-wrap: wrap; }
-
-    /* ── MOBILE CARD LIST ── */
-    .mobile-list { display: none; }
-    .mobile-card { padding: 14px 16px; border-bottom: 1px solid var(--border); }
-    .mobile-card:last-child { border-bottom: none; }
-    .mobile-card-title { font-size: 14px; font-weight: 600; margin-bottom: 6px; }
-    .mobile-card-meta { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; align-items: center; }
-    .mobile-card-detail { font-size: 12px; color: var(--gray); margin-bottom: 8px; }
-    .mobile-card-actions { display: flex; gap: 8px; flex-wrap: wrap; }
-
-    /* ── BADGES ── */
-    .badge { display: inline-flex; align-items: center; padding: 3px 9px; border-radius: 20px; font-size: 11px; font-weight: 600; white-space: nowrap; }
-    .badge-blue   { background: #dbeafe; color: #1d4ed8; }
-    .badge-teal   { background: #ccfbf1; color: #0f766e; }
-    .badge-purple { background: #ede9fe; color: #7c3aed; }
-    .badge-green  { background: #dcfce7; color: #16a34a; }
-    .badge-gray   { background: #f3f4f6; color: var(--gray); }
-
-    /* ── QUICK ACTIONS ── */
-    .quick-actions { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
-    .quick-btn { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; padding: 18px 12px; border-radius: 10px; cursor: pointer; border: 1.5px solid var(--border); background: white; font-family: inherit; font-size: 12px; font-weight: 600; color: var(--dark); transition: all 0.2s; text-align: center; }
-    .quick-btn:hover { border-color: var(--blue); color: var(--blue); background: #f0f4ff; transform: translateY(-2px); }
-    .quick-btn-icon { font-size: 22px; }
-
-    /* ── TOAST ── */
-    .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(80px); z-index: 9999; background: var(--dark); color: white; padding: 11px 20px; border-radius: 24px; font-size: 13px; font-weight: 500; opacity: 0; transition: all 0.3s; white-space: nowrap; max-width: calc(100vw - 40px); text-align: center; }
-    .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
-    .toast.success { background: var(--green); }
-    .toast.error   { background: var(--red); }
-
-    /* ── MODAL ── */
-    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 500; align-items: center; justify-content: center; padding: 16px; backdrop-filter: blur(3px); }
-    .modal-overlay.open { display: flex; }
-    .modal { background: white; border-radius: 16px; width: 100%; max-width: 520px; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.2); }
-    .modal-header { padding: 20px 24px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
-    .modal-title { font-size: 16px; font-weight: 700; }
-    .modal-close { border: none; background: #f3f4f6; border-radius: 6px; width: 32px; height: 32px; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; }
-    .modal-close:hover { background: #e5e7eb; }
-    .modal-body { padding: 20px 24px; }
-    .modal-footer { padding: 16px 24px; border-top: 1px solid var(--border); display: flex; gap: 10px; justify-content: flex-end; }
-
-    /* ── MISC ── */
-    .section-hidden { display: none !important; }
-    .loading { text-align: center; padding: 36px; color: var(--gray); font-size: 14px; }
-    .empty-state { text-align: center; padding: 36px; color: #bbb; font-size: 13px; }
-    .msg-preview { max-width: 200px; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .unread-row td { background: #fffbeb !important; }
-    .info-box { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 12px 14px; font-size: 12px; color: #1e40af; margin-bottom: 14px; line-height: 1.5; }
-    .info-box strong { font-weight: 700; }
-
-    @media (max-width: 1024px) { .stats-row { grid-template-columns: repeat(2, 1fr); } }
-    @media (max-width: 768px) {
-      :root { --sidebar-w: 0px; }
-      .sidebar { transform: translateX(-240px); width: 240px; }
-      .sidebar.open { transform: translateX(0); box-shadow: 4px 0 24px rgba(0,0,0,0.2); }
-      .main-content { margin-left: 0; padding: 16px; }
-      .hamburger { display: flex; }
-      .topbar { margin-bottom: 16px; }
-      .page-title { font-size: 17px; }
-      .stats-row { grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 16px; }
-      .stat-card { padding: 14px 16px; }
-      .stat-num { font-size: 24px; }
-      .card-body { padding: 14px; }
-      .card-header { padding: 13px 14px; }
-      .form-row-2 { grid-template-columns: 1fr; gap: 10px; }
-      .desktop-table { display: none; }
-      .mobile-list { display: block; }
-      .quick-actions { grid-template-columns: repeat(2, 1fr); }
-      .btn-block-mobile { width: 100%; }
-      .admin-badge { max-width: 140px; font-size: 10px; }
-    }
-    @media (max-width: 400px) {
-      .stats-row { grid-template-columns: 1fr 1fr; }
-      .quick-actions { grid-template-columns: 1fr 1fr; }
-    }
-  </style>
-</head>
-<body>
-
-<!-- ══ LOGIN ══ -->
-<div id="login-screen" class="login-wrap">
-  <div class="login-card">
-    <div class="login-logo">
-      <img src="assets/images/logo.png" alt="Logo" />
-      <div class="login-logo-name">PT Buana Perkasa Solusindo</div>
-      <div class="login-logo-sub">Admin Dashboard</div>
-    </div>
-    <h2 class="login-title">Selamat Datang</h2>
-    <p class="login-sub">Masuk untuk mengelola konten website</p>
-    <div class="error-msg" id="login-error"></div>
-    <div class="form-group">
-      <label class="form-label">Email</label>
-      <input class="form-input" type="email" id="login-email" placeholder="admin@buanaperkasa.co.id" autocomplete="email" />
-    </div>
-    <div class="form-group">
-      <label class="form-label">Password</label>
-      <input class="form-input" type="password" id="login-password" placeholder="••••••••" autocomplete="current-password" />
-    </div>
-    <button class="btn btn-primary" id="login-btn" onclick="doLogin()">Masuk ke Dashboard</button>
-  </div>
-</div>
-
-<!-- ══ DASHBOARD ══ -->
-<div id="dashboard-screen" class="admin-layout section-hidden">
-
-  <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
-
-  <aside class="sidebar" id="sidebar">
-    <div class="sidebar-brand">
-      <div class="sidebar-brand-name">Buana Perkasa</div>
-      <div class="sidebar-brand-sub">Admin Panel</div>
-    </div>
-    <nav class="sidebar-nav">
-      <div class="nav-section">Menu</div>
-      <button class="nav-item active" onclick="showPage('overview')">
-        <span class="nav-item-icon">📊</span><span>Overview</span>
-      </button>
-      <button class="nav-item" onclick="showPage('documents')">
-        <span class="nav-item-icon">📄</span><span>Dokumen (SBU/SKK)</span>
-      </button>
-      <button class="nav-item" onclick="showPage('portfolio')">
-        <span class="nav-item-icon">🏗️</span><span>Portofolio</span>
-      </button>
-      <button class="nav-item" onclick="showPage('messages')">
-        <span class="nav-item-icon">✉️</span><span>Pesan Masuk</span>
-      </button>
-    </nav>
-    <div class="sidebar-logout">
-      <button class="logout-btn" onclick="doLogout()">
-        <span>🚪</span><span>Keluar</span>
-      </button>
-    </div>
-  </aside>
-
-  <main class="main-content">
-    <div class="topbar">
-      <div class="topbar-left">
-        <button class="hamburger" id="hamburger" onclick="toggleSidebar()">☰</button>
-        <div class="page-title" id="page-title">Overview</div>
-      </div>
-      <div class="admin-badge" id="admin-email">admin</div>
-    </div>
-
-    <!-- ── OVERVIEW ── -->
-    <div id="page-overview">
-      <div class="stats-row">
-        <div class="stat-card"><div class="stat-num" id="stat-docs">—</div><div class="stat-label">Total Dokumen</div></div>
-        <div class="stat-card"><div class="stat-num" id="stat-portfolio">—</div><div class="stat-label">Total Proyek</div></div>
-        <div class="stat-card"><div class="stat-num" id="stat-messages">—</div><div class="stat-label">Pesan Masuk</div></div>
-        <div class="stat-card"><div class="stat-num" id="stat-unread">—</div><div class="stat-label">Belum Dibaca</div></div>
-      </div>
-      <div class="card">
-        <div class="card-header"><div class="card-title">⚡ Aksi Cepat</div></div>
-        <div class="card-body">
-          <div class="quick-actions">
-            <button class="quick-btn" onclick="showPage('documents')"><span class="quick-btn-icon">📤</span>Upload Dokumen</button>
-            <button class="quick-btn" onclick="showPage('portfolio')"><span class="quick-btn-icon">🏗️</span>Tambah Proyek</button>
-            <button class="quick-btn" onclick="showPage('messages')"><span class="quick-btn-icon">✉️</span>Pesan Masuk</button>
-            <button class="quick-btn" onclick="window.open('index.html','_blank')"><span class="quick-btn-icon">🌐</span>Lihat Website</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ── DOCUMENTS ── -->
-    <div id="page-documents" class="section-hidden">
-      <div class="info-box">
-        ℹ️ <strong>Info:</strong> Dokumen yang diupload akan langsung tampil di halaman website publik (bagian Legalitas). 
-        Pastikan RLS policy "Public read documents" aktif di Supabase agar dokumen bisa dilihat pengunjung tanpa login.
-      </div>
-      <div class="card">
-        <div class="card-header"><div class="card-title">📤 Upload Dokumen Baru</div></div>
-        <div class="card-body">
-          <div class="form-row-2">
-            <div>
-              <label class="form-label">Nama Dokumen</label>
-              <input class="form-input" type="text" id="doc-title" placeholder="SBU Konstruksi Bangunan Gedung" />
-            </div>
-            <div>
-              <label class="form-label">Kategori</label>
-              <select class="form-select" id="doc-category">
-                <option value="SBU">SBU (Sertifikat Badan Usaha)</option>
-                <option value="SKK">SKK (Sertifikat Kompetensi Kerja)</option>
-              </select>
-            </div>
-          </div>
-          <div class="form-row-2">
-            <div>
-              <label class="form-label">Masa Berlaku (Opsional)</label>
-              <input class="form-input" type="date" id="doc-valid" />
-            </div>
-            <div>
-              <label class="form-label">Akses Publik</label>
-              <select class="form-select" id="doc-public">
-                <option value="true">✅ Bisa didownload publik</option>
-                <option value="false">🔒 Hanya lihat saja</option>
-              </select>
-            </div>
-          </div>
-          <div class="form-row-1">
-            <label class="form-label">File PDF</label>
-            <div class="upload-zone" id="doc-dropzone" onclick="document.getElementById('doc-file').click()">
-              <div class="upload-zone-icon">📂</div>
-              <div class="upload-zone-text"><strong>Ketuk / klik untuk pilih file</strong></div>
-              <div class="upload-zone-hint">Format: PDF, maks. 10MB</div>
-              <div class="upload-selected" id="doc-filename"></div>
-            </div>
-            <input type="file" id="doc-file" accept=".pdf" style="display:none" onchange="onDocFileSelect(this)" />
-            <div class="progress-bar" id="doc-progress"><div class="progress-fill" id="doc-progress-fill"></div></div>
-          </div>
-          <button class="btn btn-success btn-block btn-block-mobile" style="margin-top:4px;padding:12px" onclick="uploadDocument()">
-            ⬆ Upload Dokumen
-          </button>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="card-header"><div class="card-title">📋 Daftar Dokumen</div></div>
-        <div id="docs-loading" class="loading">Memuat...</div>
-        <div class="table-wrap desktop-table" id="docs-table-wrap" style="display:none">
-          <table class="data-table">
-            <thead><tr><th>Nama</th><th>Kategori</th><th>Berlaku s/d</th><th>Akses</th><th>File</th><th>Aksi</th></tr></thead>
-            <tbody id="docs-tbody"></tbody>
-          </table>
-        </div>
-        <div class="mobile-list" id="docs-mobile-list"></div>
-      </div>
-    </div>
-
-    <!-- ── PORTFOLIO ── -->
-    <div id="page-portfolio" class="section-hidden">
-      <div class="card">
-        <div class="card-header"><div class="card-title">➕ Tambah Proyek Baru</div></div>
-        <div class="card-body">
-          <div class="form-row-2">
-            <div>
-              <label class="form-label">Nama Proyek (Indonesia)</label>
-              <input class="form-input" type="text" id="proj-title" placeholder="Gedung Perkantoran 8 Lantai" />
-            </div>
-            <div>
-              <label class="form-label">Nama Proyek (English)</label>
-              <input class="form-input" type="text" id="proj-title-en" placeholder="8-Story Office Building" />
-            </div>
-          </div>
-          <div class="form-row-2">
-            <div>
-              <label class="form-label">Kategori</label>
-              <select class="form-select" id="proj-category">
-                <option value="konstruksi">Konstruksi</option>
-                <option value="properti">Properti</option>
-                <option value="konsultasi">Konsultasi</option>
-              </select>
-            </div>
-            <div>
-              <label class="form-label">Lokasi</label>
-              <input class="form-input" type="text" id="proj-location" placeholder="Jakarta Selatan" />
-            </div>
-          </div>
-          <div class="form-row-2">
-            <div>
-              <label class="form-label">Tahun Selesai</label>
-              <input class="form-input" type="number" id="proj-year" placeholder="2024" min="2000" max="2030" />
-            </div>
-            <div>
-              <label class="form-label">Urutan Tampil</label>
-              <input class="form-input" type="number" id="proj-order" placeholder="1" min="1" />
-            </div>
-          </div>
-          <div class="form-row-1">
-            <label class="form-label">Deskripsi (Opsional)</label>
-            <textarea class="form-input" id="proj-desc" rows="3" placeholder="Deskripsi singkat proyek..."></textarea>
-          </div>
-          <div class="form-row-1">
-            <label class="form-label">Foto Proyek (bisa pilih banyak)</label>
-            <div class="upload-zone" id="proj-dropzone" onclick="document.getElementById('proj-files').click()">
-              <div class="upload-zone-icon">🖼️</div>
-              <div class="upload-zone-text"><strong>Ketuk / klik untuk pilih foto</strong></div>
-              <div class="upload-zone-hint">JPG, PNG, WebP — bisa pilih lebih dari 1</div>
-              <div class="upload-selected" id="proj-filenames"></div>
-            </div>
-            <input type="file" id="proj-files" accept="image/*" multiple style="display:none" onchange="onProjFilesSelect(this)" />
-            <div class="progress-bar" id="proj-progress"><div class="progress-fill" id="proj-progress-fill"></div></div>
-          </div>
-          <button class="btn btn-success btn-block btn-block-mobile" style="padding:12px" onclick="addProject()">
-            ✅ Simpan Proyek
-          </button>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="card-header"><div class="card-title">🏗️ Daftar Proyek</div></div>
-        <div id="proj-loading" class="loading">Memuat...</div>
-        <div class="table-wrap desktop-table" id="proj-table-wrap" style="display:none">
-          <table class="data-table">
-            <thead><tr><th>Nama Proyek</th><th>Kategori</th><th>Lokasi</th><th>Tahun</th><th>Status</th><th>Aksi</th></tr></thead>
-            <tbody id="proj-tbody"></tbody>
-          </table>
-        </div>
-        <div class="mobile-list" id="proj-mobile-list"></div>
-      </div>
-    </div>
-
-    <!-- ── MESSAGES ── -->
-    <div id="page-messages" class="section-hidden">
-      <div class="card">
-        <div class="card-header"><div class="card-title">✉️ Pesan dari Form Kontak</div></div>
-        <div id="msg-loading" class="loading">Memuat...</div>
-        <div class="table-wrap desktop-table" id="msg-table-wrap" style="display:none">
-          <table class="data-table">
-            <thead><tr><th>Nama</th><th>Email / HP</th><th>Layanan</th><th>Pesan</th><th>Tanggal</th><th>Status</th></tr></thead>
-            <tbody id="msg-tbody"></tbody>
-          </table>
-        </div>
-        <div class="mobile-list" id="msg-mobile-list"></div>
-      </div>
-    </div>
-
-  </main>
-</div>
-
-<!-- ══ MODAL EDIT DOKUMEN ══ -->
-<div class="modal-overlay" id="modal-doc">
-  <div class="modal">
-    <div class="modal-header">
-      <div class="modal-title">✏️ Edit Dokumen</div>
-      <button class="modal-close" onclick="closeModal('modal-doc')">✕</button>
-    </div>
-    <div class="modal-body">
-      <input type="hidden" id="edit-doc-id" />
-      <div class="form-row-2">
-        <div>
-          <label class="form-label">Nama Dokumen</label>
-          <input class="form-input" type="text" id="edit-doc-title" />
-        </div>
-        <div>
-          <label class="form-label">Kategori</label>
-          <select class="form-select" id="edit-doc-category">
-            <option value="SBU">SBU</option>
-            <option value="SKK">SKK</option>
-          </select>
-        </div>
-      </div>
-      <div class="form-row-2">
-        <div>
-          <label class="form-label">Masa Berlaku</label>
-          <input class="form-input" type="date" id="edit-doc-valid" />
-        </div>
-        <div>
-          <label class="form-label">Akses Publik</label>
-          <select class="form-select" id="edit-doc-public">
-            <option value="true">✅ Bisa didownload publik</option>
-            <option value="false">🔒 Hanya lihat saja</option>
-          </select>
-        </div>
-      </div>
-      <div class="form-row-1">
-        <label class="form-label">Ganti File PDF (opsional)</label>
-        <div class="upload-zone" style="padding:16px" onclick="document.getElementById('edit-doc-file').click()">
-          <div class="upload-zone-text"><strong>Pilih file baru</strong> atau biarkan kosong jika tidak ingin ganti</div>
-          <div class="upload-selected" id="edit-doc-filename"></div>
-        </div>
-        <input type="file" id="edit-doc-file" accept=".pdf" style="display:none" onchange="onEditDocFileSelect(this)" />
-        <div class="progress-bar" id="edit-doc-progress"><div class="progress-fill" id="edit-doc-progress-fill"></div></div>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-outline" onclick="closeModal('modal-doc')">Batal</button>
-      <button class="btn btn-success" onclick="saveEditDoc()">💾 Simpan Perubahan</button>
-    </div>
-  </div>
-</div>
-
-<!-- ══ MODAL EDIT PROYEK ══ -->
-<div class="modal-overlay" id="modal-proj">
-  <div class="modal">
-    <div class="modal-header">
-      <div class="modal-title">✏️ Edit Proyek</div>
-      <button class="modal-close" onclick="closeModal('modal-proj')">✕</button>
-    </div>
-    <div class="modal-body">
-      <input type="hidden" id="edit-proj-id" />
-      <div class="form-row-2">
-        <div>
-          <label class="form-label">Nama Proyek (Indonesia)</label>
-          <input class="form-input" type="text" id="edit-proj-title" />
-        </div>
-        <div>
-          <label class="form-label">Nama Proyek (English)</label>
-          <input class="form-input" type="text" id="edit-proj-title-en" />
-        </div>
-      </div>
-      <div class="form-row-2">
-        <div>
-          <label class="form-label">Kategori</label>
-          <select class="form-select" id="edit-proj-category">
-            <option value="konstruksi">Konstruksi</option>
-            <option value="properti">Properti</option>
-            <option value="konsultasi">Konsultasi</option>
-          </select>
-        </div>
-        <div>
-          <label class="form-label">Lokasi</label>
-          <input class="form-input" type="text" id="edit-proj-location" />
-        </div>
-      </div>
-      <div class="form-row-2">
-        <div>
-          <label class="form-label">Tahun Selesai</label>
-          <input class="form-input" type="number" id="edit-proj-year" min="2000" max="2030" />
-        </div>
-        <div>
-          <label class="form-label">Urutan Tampil</label>
-          <input class="form-input" type="number" id="edit-proj-order" min="1" />
-        </div>
-      </div>
-      <div class="form-row-1">
-        <label class="form-label">Deskripsi</label>
-        <textarea class="form-input" id="edit-proj-desc" rows="3"></textarea>
-      </div>
-      <div class="form-row-1">
-        <label class="form-label">Tambah Foto Baru (opsional)</label>
-        <div class="upload-zone" style="padding:16px" onclick="document.getElementById('edit-proj-files').click()">
-          <div class="upload-zone-text"><strong>Pilih foto baru</strong> (akan ditambahkan ke foto yang ada)</div>
-          <div class="upload-selected" id="edit-proj-filenames"></div>
-        </div>
-        <input type="file" id="edit-proj-files" accept="image/*" multiple style="display:none" onchange="onEditProjFilesSelect(this)" />
-        <div class="progress-bar" id="edit-proj-progress"><div class="progress-fill" id="edit-proj-progress-fill"></div></div>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-outline" onclick="closeModal('modal-proj')">Batal</button>
-      <button class="btn btn-success" onclick="saveEditProject()">💾 Simpan Perubahan</button>
-    </div>
-  </div>
-</div>
-
-<div class="toast" id="toast"></div>
-
-<script>
-  const SUPABASE_URL      = "https://zcaggwwdqugjwrnkrxyv.supabase.co";
-  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpjYWdnd3dkcXVnandybmtyeHl2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI4NjcyMDAsImV4cCI6MjA4ODQ0MzIwMH0.pQaA1nF610JDX35bmmedOlD-FptmTwCUL5Fqg4G15EU";
-  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-  // ── SIDEBAR ──
-  function toggleSidebar() {
-    document.getElementById("sidebar").classList.toggle("open");
-    document.getElementById("sidebar-overlay").classList.toggle("open");
-  }
-  function closeSidebar() {
-    document.getElementById("sidebar").classList.remove("open");
-    document.getElementById("sidebar-overlay").classList.remove("open");
+    return '<div class="doc-card">' +
+      '<div class="doc-card-header ' + color + '">' +
+        '<div class="doc-icon-wrap">' + icon + '</div>' +
+        '<div class="doc-card-title">' + title + '</div>' +
+      '</div>' +
+      '<div class="doc-card-body">' +
+        (rows || '') +
+        (!items.length
+          ? '<div class="doc-placeholder">&#128206; ' + placeholder + '</div>' : '') +
+      '</div>' +
+    '</div>';
   }
 
-  // ── MODAL ──
-  function openModal(id) { document.getElementById(id).classList.add("open"); }
-  function closeModal(id) { document.getElementById(id).classList.remove("open"); }
-  // Tutup modal kalau klik overlay
-  document.querySelectorAll(".modal-overlay").forEach(el => {
-    el.addEventListener("click", function(e) { if (e.target === el) el.classList.remove("open"); });
-  });
+  var sbuTitle = lang === "en" ? "Business Entity Certificate (SBU)" : "Sertifikat Badan Usaha (SBU)";
+  var skkTitle = lang === "en" ? "Work Competency Certificate (SKK)"  : "Sertifikat Kompetensi Kerja (SKK)";
 
-  // ── AUTH ──
-  async function doLogin() {
-    const email = document.getElementById("login-email").value;
-    const pass  = document.getElementById("login-password").value;
-    const btn   = document.getElementById("login-btn");
-    btn.textContent = "Memproses..."; btn.disabled = true;
-    const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
-    btn.textContent = "Masuk ke Dashboard"; btn.disabled = false;
-    if (error) {
-      const el = document.getElementById("login-error");
-      el.textContent = "Email atau password salah."; el.style.display = "block";
-    } else {
-      showDashboard(data.user.email);
+  grid.innerHTML = renderCat(sbu, "blue", "&#127963;", sbuTitle) +
+                   renderCat(skk, "teal", "&#127891;", skkTitle);
+
+  grid.dataset.supabaseLoaded = "true";
+}
+
+function viewDoc(fileUrl) {
+  if (fileUrl) {
+    window.open(fileUrl, "_blank");
+  } else {
+    alert("Dokumen belum tersedia. Admin belum mengupload file ini.");
+  }
+}
+
+// ============================================================
+// PORTFOLIO
+// ============================================================
+
+async function fetchPortfolio(category) {
+  var query = sb.from("portfolio")
+    .select("*, portfolio_photos(photo_url, caption, sort_order)")
+    .eq("is_active", true)
+    .order("sort_order");
+  if (category) query = query.eq("category", category);
+  var result = await query;
+  if (result.error) { console.error("fetchPortfolio:", result.error); return []; }
+  return result.data;
+}
+
+async function loadPortfolio(filterIndex) {
+  if (typeof filterIndex === "undefined") filterIndex = 0;
+  var categoryMap = [null, "konstruksi", "properti", "konsultasi"];
+  var cat   = categoryMap[filterIndex];
+  var items = await fetchPortfolio(cat);
+  var lang  = (typeof currentLang !== "undefined") ? currentLang : "id";
+
+  var colorMap = { konstruksi: "#1e40af", properti: "#0f766e", konsultasi: "#7c3aed" };
+  var iconMap  = { konstruksi: "&#128679;", properti: "&#127970;", konsultasi: "&#128188;" };
+
+  var grid = document.getElementById("portfolio-grid");
+  if (!grid) return;
+
+  if (!items.length) {
+    var emptyText = lang === "en" ? "No projects in this category yet." : "Belum ada proyek di kategori ini.";
+    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:#aaa;">' + emptyText + '</div>';
+    return;
+  }
+
+  grid.innerHTML = items.map(function(p, i) {
+    var title    = (lang === "en" && p.title_en) ? p.title_en : p.title;
+    var coverUrl = p.cover_url || (p.portfolio_photos && p.portfolio_photos[0] ? p.portfolio_photos[0].photo_url : null);
+    var catLabels = lang === "en"
+      ? { konstruksi: "Construction", properti: "Property", konsultasi: "Consulting" }
+      : { konstruksi: "Konstruksi",   properti: "Properti", konsultasi: "Konsultasi" };
+    var catLabel = catLabels[p.category] || p.category;
+    var delay = (i % 3) + 1;
+
+    return '<div class="portfolio-card anim anim-delay-' + delay + '" onclick="window.location.href=\'pages/portfolio-detail.html?id=' + p.id + '\'" style="cursor:pointer">' +
+      '<div class="portfolio-img" style="' + (coverUrl ? '' : 'background:linear-gradient(135deg,' + colorMap[p.category] + 'dd,' + colorMap[p.category] + '88)') + '">' +
+        (coverUrl ? '<img src="' + coverUrl + '" alt="' + title + '" style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0;">' : '<span style="font-size:52px;opacity:0.5">' + iconMap[p.category] + '</span>') +
+        '<div class="portfolio-img-overlay"><span class="portfolio-overlay-text">&#128247; ' + (lang === "en" ? "View Photos" : "Lihat Foto") + '</span></div>' +
+        '<div class="portfolio-badge">' + catLabel + '</div>' +
+        '<div class="portfolio-meta">&#128205; ' + (p.location || "") + ' &middot; ' + (p.year || "") + '</div>' +
+      '</div>' +
+      '<div class="portfolio-info">' +
+        '<div class="portfolio-title">' + title + '</div>' +
+        '<div class="portfolio-sub">' + (p.location || "") + ' &middot; ' + (p.year || "") + '</div>' +
+      '</div>' +
+    '</div>';
+  }).join("");
+
+  var ph = document.getElementById("portfolio-placeholder");
+  if (ph) ph.style.display = "none";
+  if (typeof initScrollAnim === "function") initScrollAnim();
+}
+
+// ============================================================
+// CONTACT FORM
+// ============================================================
+
+async function submitContactToSupabase(formData) {
+  var result = await sb.from("contact_messages").insert([{
+    name:    formData.name,
+    email:   formData.email,
+    phone:   formData.phone,
+    service: formData.service,
+    message: formData.message
+  }]);
+  if (result.error) throw result.error;
+}
+
+// ============================================================
+// FILTER PORTFOLIO
+// ============================================================
+
+window.setFilter = async function(idx) {
+  if (typeof currentFilter !== "undefined") currentFilter = idx;
+  var t = (typeof LANG !== "undefined" && typeof currentLang !== "undefined") ? LANG[currentLang] : null;
+  if (t) {
+    var filtersEl = document.getElementById("portfolio-filters");
+    if (filtersEl) {
+      filtersEl.innerHTML = t.portfolio.filters.map(function(f, i) {
+        return '<button class="filter-btn' + (idx === i ? " active" : "") + '" onclick="setFilter(' + i + ')">' + f + '</button>';
+      }).join("");
     }
   }
+  await loadPortfolio(idx);
+};
 
-  async function doLogout() { await sb.auth.signOut(); location.reload(); }
+// ============================================================
+// INIT
+// ============================================================
 
-  function showDashboard(email) {
-    document.getElementById("login-screen").classList.add("section-hidden");
-    document.getElementById("dashboard-screen").classList.remove("section-hidden");
-    document.getElementById("admin-email").textContent = email;
-    loadOverviewStats();
-  }
+async function initSupabase() {
+  try { await loadDocuments(); } catch(e) { console.warn("loadDocuments error:", e); }
+  try { await loadPortfolio(0); } catch(e) { console.warn("loadPortfolio error:", e); }
+}
 
-  sb.auth.getSession().then(({ data }) => {
-    if (data.session) showDashboard(data.session.user.email);
-  });
-
-  document.getElementById("login-password").addEventListener("keydown", e => {
-    if (e.key === "Enter") doLogin();
-  });
-
-  // ── NAV ──
-  const PAGES = ["overview","documents","portfolio","messages"];
-  const PAGE_TITLES = { overview:"Overview", documents:"Dokumen (SBU/SKK)", portfolio:"Portofolio", messages:"Pesan Masuk" };
-
-  function showPage(page) {
-    PAGES.forEach(p => document.getElementById(`page-${p}`).classList.add("section-hidden"));
-    document.querySelectorAll(".nav-item").forEach(el => el.classList.remove("active"));
-    document.getElementById(`page-${page}`).classList.remove("section-hidden");
-    document.getElementById("page-title").textContent = PAGE_TITLES[page];
-    document.querySelectorAll(".nav-item")[PAGES.indexOf(page)].classList.add("active");
-    closeSidebar();
-    if (page === "documents") loadDocs();
-    if (page === "portfolio") loadProjects();
-    if (page === "messages")  loadMessages();
-  }
-
-  // ── TOAST ──
-  function toast(msg, type = "success") {
-    const el = document.getElementById("toast");
-    el.textContent = (type === "success" ? "✅ " : "❌ ") + msg;
-    el.className = `toast ${type} show`;
-    setTimeout(() => el.classList.remove("show"), 3500);
-  }
-
-  // ── OVERVIEW ──
-  async function loadOverviewStats() {
-    const [docs, proj, msgs] = await Promise.all([
-      sb.from("documents").select("id", { count: "exact" }),
-      sb.from("portfolio").select("id", { count: "exact" }),
-      sb.from("contact_messages").select("id, is_read", { count: "exact" })
-    ]);
-    document.getElementById("stat-docs").textContent      = docs.count ?? 0;
-    document.getElementById("stat-portfolio").textContent = proj.count ?? 0;
-    document.getElementById("stat-messages").textContent  = msgs.count ?? 0;
-    document.getElementById("stat-unread").textContent    = (msgs.data || []).filter(m => !m.is_read).length;
-  }
-
-  // ════════════════════════════════════════════════════
-  // ── DOCUMENTS CRUD ──
-  // ════════════════════════════════════════════════════
-  let selectedDocFile = null;
-  function onDocFileSelect(input) {
-    selectedDocFile = input.files[0];
-    document.getElementById("doc-filename").textContent = selectedDocFile ? "📎 " + selectedDocFile.name : "";
-  }
-
-  async function uploadDocument() {
-    const title    = document.getElementById("doc-title").value.trim();
-    const category = document.getElementById("doc-category").value;
-    const valid    = document.getElementById("doc-valid").value || null;
-    const isPublic = document.getElementById("doc-public").value === "true";
-    if (!title) return toast("Nama dokumen wajib diisi", "error");
-
-    let fileUrl = null, fileName = null;
-    if (selectedDocFile) {
-      const progress = document.getElementById("doc-progress");
-      const fill = document.getElementById("doc-progress-fill");
-      progress.style.display = "block"; fill.style.width = "30%";
-      const path = `documents/${Date.now()}_${selectedDocFile.name}`;
-      const { error: upErr } = await sb.storage.from("buana-files").upload(path, selectedDocFile);
-      if (upErr) { progress.style.display = "none"; return toast("Gagal upload: " + upErr.message, "error"); }
-      fill.style.width = "80%";
-      const { data: urlData } = sb.storage.from("buana-files").getPublicUrl(path);
-      fileUrl = urlData.publicUrl; fileName = selectedDocFile.name;
-      fill.style.width = "100%";
-      setTimeout(() => { progress.style.display = "none"; fill.style.width = "0%"; }, 800);
-    }
-
-    const { error } = await sb.from("documents").insert([{
-      title, category, valid_until: valid, is_public: isPublic, file_url: fileUrl, file_name: fileName
-    }]);
-    if (error) return toast("Gagal simpan: " + error.message, "error");
-
-    toast("Dokumen berhasil diupload!");
-    document.getElementById("doc-title").value = "";
-    document.getElementById("doc-valid").value = "";
-    document.getElementById("doc-filename").textContent = "";
-    selectedDocFile = null;
-    document.getElementById("doc-file").value = "";
-    loadDocs();
-    loadOverviewStats();
-  }
-
-  async function loadDocs() {
-    document.getElementById("docs-loading").style.display = "block";
-    document.getElementById("docs-table-wrap").style.display = "none";
-    document.getElementById("docs-mobile-list").innerHTML = "";
-    const { data } = await sb.from("documents").select("*").order("category").order("title");
-    document.getElementById("docs-loading").style.display = "none";
-
-    const rows = data || [];
-    if (!rows.length) {
-      document.getElementById("docs-mobile-list").innerHTML = '<div class="empty-state">Belum ada dokumen</div>';
-      return;
-    }
-
-    document.getElementById("docs-table-wrap").style.display = "block";
-    document.getElementById("docs-tbody").innerHTML = rows.map(d => `
-      <tr>
-        <td><strong>${d.title}</strong></td>
-        <td><span class="badge ${d.category === "SBU" ? "badge-blue" : "badge-teal"}">${d.category}</span></td>
-        <td style="font-size:12px">${d.valid_until ? new Date(d.valid_until).toLocaleDateString("id-ID") : "—"}</td>
-        <td><span class="badge ${d.is_public ? "badge-green" : "badge-gray"}">${d.is_public ? "Publik" : "Terbatas"}</span></td>
-        <td>${d.file_url ? `<a href="${d.file_url}" target="_blank" style="color:var(--blue);font-size:12px">📄 Lihat</a>` : '<span style="color:#bbb;font-size:12px">—</span>'}</td>
-        <td>
-          <div class="action-btns">
-            <button class="btn btn-warning" onclick="openEditDoc('${d.id}','${escStr(d.title)}','${d.category}','${d.valid_until||""}','${d.is_public}')">✏️ Edit</button>
-            <button class="btn btn-danger" onclick="deleteDoc('${d.id}')">🗑 Hapus</button>
-          </div>
-        </td>
-      </tr>
-    `).join("");
-
-    document.getElementById("docs-mobile-list").innerHTML = rows.map(d => `
-      <div class="mobile-card">
-        <div class="mobile-card-title">${d.title}</div>
-        <div class="mobile-card-meta">
-          <span class="badge ${d.category === "SBU" ? "badge-blue" : "badge-teal"}">${d.category}</span>
-          <span class="badge ${d.is_public ? "badge-green" : "badge-gray"}">${d.is_public ? "Publik" : "Terbatas"}</span>
-        </div>
-        ${d.valid_until ? `<div class="mobile-card-detail">Berlaku s/d: ${new Date(d.valid_until).toLocaleDateString("id-ID")}</div>` : ""}
-        <div class="mobile-card-actions">
-          ${d.file_url ? `<a href="${d.file_url}" target="_blank"><button class="btn btn-outline">📄 Lihat</button></a>` : ""}
-          <button class="btn btn-warning" onclick="openEditDoc('${d.id}','${escStr(d.title)}','${d.category}','${d.valid_until||""}','${d.is_public}')">✏️ Edit</button>
-          <button class="btn btn-danger" onclick="deleteDoc('${d.id}')">🗑 Hapus</button>
-        </div>
-      </div>
-    `).join("");
-  }
-
-  // ── Edit Dokumen ──
-  function openEditDoc(id, title, category, valid, isPublic) {
-    document.getElementById("edit-doc-id").value       = id;
-    document.getElementById("edit-doc-title").value    = title;
-    document.getElementById("edit-doc-category").value = category;
-    document.getElementById("edit-doc-valid").value    = valid;
-    document.getElementById("edit-doc-public").value   = isPublic;
-    document.getElementById("edit-doc-filename").textContent = "";
-    document.getElementById("edit-doc-file").value     = "";
-    selectedEditDocFile = null;
-    openModal("modal-doc");
-  }
-
-  let selectedEditDocFile = null;
-  function onEditDocFileSelect(input) {
-    selectedEditDocFile = input.files[0];
-    document.getElementById("edit-doc-filename").textContent = selectedEditDocFile ? "📎 " + selectedEditDocFile.name : "";
-  }
-
-  async function saveEditDoc() {
-    const id       = document.getElementById("edit-doc-id").value;
-    const title    = document.getElementById("edit-doc-title").value.trim();
-    const category = document.getElementById("edit-doc-category").value;
-    const valid    = document.getElementById("edit-doc-valid").value || null;
-    const isPublic = document.getElementById("edit-doc-public").value === "true";
-    if (!title) return toast("Nama dokumen wajib diisi", "error");
-
-    let updateData = { title, category, valid_until: valid, is_public: isPublic };
-
-    if (selectedEditDocFile) {
-      const progress = document.getElementById("edit-doc-progress");
-      const fill = document.getElementById("edit-doc-progress-fill");
-      progress.style.display = "block"; fill.style.width = "40%";
-      const path = `documents/${Date.now()}_${selectedEditDocFile.name}`;
-      const { error: upErr } = await sb.storage.from("buana-files").upload(path, selectedEditDocFile);
-      if (upErr) { progress.style.display = "none"; return toast("Gagal upload: " + upErr.message, "error"); }
-      fill.style.width = "90%";
-      const { data: urlData } = sb.storage.from("buana-files").getPublicUrl(path);
-      updateData.file_url  = urlData.publicUrl;
-      updateData.file_name = selectedEditDocFile.name;
-      fill.style.width = "100%";
-      setTimeout(() => { progress.style.display = "none"; fill.style.width = "0%"; }, 600);
-    }
-
-    const { error } = await sb.from("documents").update(updateData).eq("id", id);
-    if (error) return toast("Gagal update: " + error.message, "error");
-
-    closeModal("modal-doc");
-    toast("Dokumen berhasil diperbarui!");
-    loadDocs();
-  }
-
-  async function deleteDoc(id) {
-    if (!confirm("Yakin hapus dokumen ini?")) return;
-    await sb.from("documents").delete().eq("id", id);
-    toast("Dokumen dihapus"); loadDocs(); loadOverviewStats();
-  }
-
-  // ════════════════════════════════════════════════════
-  // ── PORTFOLIO CRUD ──
-  // ════════════════════════════════════════════════════
-  let selectedProjFiles = [];
-  function onProjFilesSelect(input) {
-    selectedProjFiles = Array.from(input.files);
-    document.getElementById("proj-filenames").textContent =
-      selectedProjFiles.length ? `🖼️ ${selectedProjFiles.length} foto dipilih` : "";
-  }
-
-  async function addProject() {
-    const title    = document.getElementById("proj-title").value.trim();
-    const titleEn  = document.getElementById("proj-title-en").value.trim();
-    const category = document.getElementById("proj-category").value;
-    const location = document.getElementById("proj-location").value.trim();
-    const year     = parseInt(document.getElementById("proj-year").value) || null;
-    const order    = parseInt(document.getElementById("proj-order").value) || 99;
-    const desc     = document.getElementById("proj-desc").value.trim();
-    if (!title) return toast("Nama proyek wajib diisi", "error");
-
-    const { data: proj, error } = await sb.from("portfolio").insert([{
-      title, title_en: titleEn || null, category,
-      location: location || null, year, sort_order: order,
-      description: desc || null, is_active: true
-    }]).select().single();
-    if (error) return toast("Gagal simpan: " + error.message, "error");
-
-    if (selectedProjFiles.length) {
-      const fill = document.getElementById("proj-progress-fill");
-      document.getElementById("proj-progress").style.display = "block";
-      for (let i = 0; i < selectedProjFiles.length; i++) {
-        const file = selectedProjFiles[i];
-        const path = `portfolio/${proj.id}/${Date.now()}_${file.name}`;
-        fill.style.width = `${((i + 1) / selectedProjFiles.length) * 90}%`;
-        const { error: upErr } = await sb.storage.from("buana-files").upload(path, file);
-        if (upErr) continue;
-        const { data: urlData } = sb.storage.from("buana-files").getPublicUrl(path);
-        await sb.from("portfolio_photos").insert([{ portfolio_id: proj.id, photo_url: urlData.publicUrl, sort_order: i }]);
-        if (i === 0) await sb.from("portfolio").update({ cover_url: urlData.publicUrl }).eq("id", proj.id);
-      }
-      fill.style.width = "100%";
-      setTimeout(() => { document.getElementById("proj-progress").style.display = "none"; fill.style.width = "0%"; }, 800);
-    }
-
-    toast("Proyek berhasil ditambahkan!");
-    ["proj-title","proj-title-en","proj-location","proj-year","proj-order","proj-desc"].forEach(id => document.getElementById(id).value = "");
-    document.getElementById("proj-filenames").textContent = "";
-    document.getElementById("proj-files").value = "";
-    selectedProjFiles = [];
-    loadProjects();
-    loadOverviewStats();
-  }
-
-  async function loadProjects() {
-    document.getElementById("proj-loading").style.display = "block";
-    document.getElementById("proj-table-wrap").style.display = "none";
-    document.getElementById("proj-mobile-list").innerHTML = "";
-    const { data } = await sb.from("portfolio").select("*").order("sort_order");
-    document.getElementById("proj-loading").style.display = "none";
-
-    const rows = data || [];
-    if (!rows.length) {
-      document.getElementById("proj-mobile-list").innerHTML = '<div class="empty-state">Belum ada proyek</div>';
-      return;
-    }
-
-    const catBadge = { konstruksi:"badge-blue", properti:"badge-teal", konsultasi:"badge-purple" };
-
-    document.getElementById("proj-table-wrap").style.display = "block";
-    document.getElementById("proj-tbody").innerHTML = rows.map(p => `
-      <tr>
-        <td><strong>${p.title}</strong>${p.title_en ? `<br><span style="font-size:11px;color:#aaa">${p.title_en}</span>` : ""}</td>
-        <td><span class="badge ${catBadge[p.category]}">${p.category}</span></td>
-        <td style="font-size:12px">${p.location || "—"}</td>
-        <td style="font-size:12px">${p.year || "—"}</td>
-        <td><span class="badge ${p.is_active ? "badge-green" : "badge-gray"}">${p.is_active ? "Aktif" : "Hidden"}</span></td>
-        <td>
-          <div class="action-btns">
-            <button class="btn btn-warning" onclick="openEditProject(${JSON.stringify(p).split('"').join('&quot;')})">✏️ Edit</button>
-            <button class="btn btn-outline" onclick="toggleProject('${p.id}',${p.is_active})">${p.is_active ? "Sembunyikan" : "Tampilkan"}</button>
-            <button class="btn btn-danger" onclick="deleteProject('${p.id}')">🗑 Hapus</button>
-          </div>
-        </td>
-      </tr>
-    `).join("");
-
-    document.getElementById("proj-mobile-list").innerHTML = rows.map(p => `
-      <div class="mobile-card">
-        <div class="mobile-card-title">${p.title}</div>
-        <div class="mobile-card-meta">
-          <span class="badge ${catBadge[p.category]}">${p.category}</span>
-          <span class="badge ${p.is_active ? "badge-green" : "badge-gray"}">${p.is_active ? "Aktif" : "Hidden"}</span>
-        </div>
-        <div class="mobile-card-detail">📍 ${p.location || "—"} · ${p.year || "—"}</div>
-        <div class="mobile-card-actions">
-          <button class="btn btn-warning" onclick='openEditProject(${JSON.stringify(p)})'>✏️ Edit</button>
-          <button class="btn btn-outline" onclick="toggleProject('${p.id}',${p.is_active})">${p.is_active ? "Sembunyikan" : "Tampilkan"}</button>
-          <button class="btn btn-danger" onclick="deleteProject('${p.id}')">🗑 Hapus</button>
-        </div>
-      </div>
-    `).join("");
-  }
-
-  // ── Edit Proyek ──
-  function openEditProject(p) {
-    if (typeof p === "string") p = JSON.parse(p);
-    document.getElementById("edit-proj-id").value       = p.id;
-    document.getElementById("edit-proj-title").value    = p.title || "";
-    document.getElementById("edit-proj-title-en").value = p.title_en || "";
-    document.getElementById("edit-proj-category").value = p.category || "konstruksi";
-    document.getElementById("edit-proj-location").value = p.location || "";
-    document.getElementById("edit-proj-year").value     = p.year || "";
-    document.getElementById("edit-proj-order").value    = p.sort_order || "";
-    document.getElementById("edit-proj-desc").value     = p.description || "";
-    document.getElementById("edit-proj-filenames").textContent = "";
-    document.getElementById("edit-proj-files").value    = "";
-    selectedEditProjFiles = [];
-    openModal("modal-proj");
-  }
-
-  let selectedEditProjFiles = [];
-  function onEditProjFilesSelect(input) {
-    selectedEditProjFiles = Array.from(input.files);
-    document.getElementById("edit-proj-filenames").textContent =
-      selectedEditProjFiles.length ? `🖼️ ${selectedEditProjFiles.length} foto dipilih` : "";
-  }
-
-  async function saveEditProject() {
-    const id       = document.getElementById("edit-proj-id").value;
-    const title    = document.getElementById("edit-proj-title").value.trim();
-    const titleEn  = document.getElementById("edit-proj-title-en").value.trim();
-    const category = document.getElementById("edit-proj-category").value;
-    const location = document.getElementById("edit-proj-location").value.trim();
-    const year     = parseInt(document.getElementById("edit-proj-year").value) || null;
-    const order    = parseInt(document.getElementById("edit-proj-order").value) || 99;
-    const desc     = document.getElementById("edit-proj-desc").value.trim();
-    if (!title) return toast("Nama proyek wajib diisi", "error");
-
-    const { error } = await sb.from("portfolio").update({
-      title, title_en: titleEn || null, category,
-      location: location || null, year, sort_order: order,
-      description: desc || null
-    }).eq("id", id);
-    if (error) return toast("Gagal update: " + error.message, "error");
-
-    // Upload foto baru jika ada
-    if (selectedEditProjFiles.length) {
-      const fill = document.getElementById("edit-proj-progress-fill");
-      document.getElementById("edit-proj-progress").style.display = "block";
-      let firstNewUrl = null;
-      for (let i = 0; i < selectedEditProjFiles.length; i++) {
-        const file = selectedEditProjFiles[i];
-        const path = `portfolio/${id}/${Date.now()}_${file.name}`;
-        fill.style.width = `${((i + 1) / selectedEditProjFiles.length) * 90}%`;
-        const { error: upErr } = await sb.storage.from("buana-files").upload(path, file);
-        if (upErr) continue;
-        const { data: urlData } = sb.storage.from("buana-files").getPublicUrl(path);
-        const { data: existingPhotos } = await sb.from("portfolio_photos").select("sort_order").eq("portfolio_id", id).order("sort_order", { ascending: false }).limit(1);
-        const nextOrder = existingPhotos && existingPhotos[0] ? existingPhotos[0].sort_order + 1 : 0;
-        await sb.from("portfolio_photos").insert([{ portfolio_id: id, photo_url: urlData.publicUrl, sort_order: nextOrder + i }]);
-        if (i === 0) firstNewUrl = urlData.publicUrl;
-      }
-      // Jika belum ada cover, set dari foto baru
-      if (firstNewUrl) {
-        const { data: proj } = await sb.from("portfolio").select("cover_url").eq("id", id).single();
-        if (!proj.cover_url) await sb.from("portfolio").update({ cover_url: firstNewUrl }).eq("id", id);
-      }
-      fill.style.width = "100%";
-      setTimeout(() => { document.getElementById("edit-proj-progress").style.display = "none"; fill.style.width = "0%"; }, 600);
-    }
-
-    closeModal("modal-proj");
-    toast("Proyek berhasil diperbarui!");
-    loadProjects();
-  }
-
-  async function toggleProject(id, current) {
-    await sb.from("portfolio").update({ is_active: !current }).eq("id", id);
-    toast(`Proyek ${!current ? "ditampilkan" : "disembunyikan"}`); loadProjects();
-  }
-
-  async function deleteProject(id) {
-    if (!confirm("Yakin hapus proyek ini? Semua foto juga akan terhapus.")) return;
-    await sb.from("portfolio_photos").delete().eq("portfolio_id", id);
-    await sb.from("portfolio").delete().eq("id", id);
-    toast("Proyek dihapus"); loadProjects(); loadOverviewStats();
-  }
-
-  // ── MESSAGES ──
-  async function loadMessages() {
-    document.getElementById("msg-loading").style.display = "block";
-    document.getElementById("msg-table-wrap").style.display = "none";
-    document.getElementById("msg-mobile-list").innerHTML = "";
-    const { data } = await sb.from("contact_messages").select("*").order("created_at", { ascending: false });
-    document.getElementById("msg-loading").style.display = "none";
-
-    const rows = data || [];
-    if (!rows.length) {
-      document.getElementById("msg-mobile-list").innerHTML = '<div class="empty-state">Belum ada pesan masuk</div>';
-      return;
-    }
-
-    const fmtDate = d => new Date(d).toLocaleDateString("id-ID", { day:"numeric", month:"short", year:"numeric", hour:"2-digit", minute:"2-digit" });
-
-    document.getElementById("msg-table-wrap").style.display = "block";
-    document.getElementById("msg-tbody").innerHTML = rows.map(m => `
-      <tr class="${!m.is_read ? "unread-row" : ""}">
-        <td><strong>${m.name}</strong></td>
-        <td><a href="mailto:${m.email}" style="color:var(--blue);font-size:12px">${m.email}</a>${m.phone ? `<br><span style="font-size:11px;color:#aaa">${m.phone}</span>` : ""}</td>
-        <td style="font-size:12px">${m.service || "—"}</td>
-        <td><div class="msg-preview">${m.message}</div></td>
-        <td style="font-size:11px;color:#888;white-space:nowrap">${fmtDate(m.created_at)}</td>
-        <td>
-          <span class="badge ${m.is_read ? "badge-gray" : "badge-blue"}">${m.is_read ? "Dibaca" : "Baru"}</span>
-          ${!m.is_read ? `<br><button class="btn btn-outline" style="margin-top:4px;font-size:11px;padding:4px 8px" onclick="markRead('${m.id}')">✓ Tandai Dibaca</button>` : ""}
-        </td>
-      </tr>
-    `).join("");
-
-    document.getElementById("msg-mobile-list").innerHTML = rows.map(m => `
-      <div class="mobile-card" style="${!m.is_read ? "background:#fffbeb" : ""}">
-        <div class="mobile-card-title">${m.name} ${!m.is_read ? '<span class="badge badge-blue" style="font-size:10px">Baru</span>' : ''}</div>
-        <div class="mobile-card-detail">📧 <a href="mailto:${m.email}" style="color:var(--blue)">${m.email}</a>${m.phone ? ` · 📱 ${m.phone}` : ""}</div>
-        ${m.service ? `<div class="mobile-card-detail">🏷️ ${m.service}</div>` : ""}
-        <div class="mobile-card-detail" style="background:#f9fafb;padding:8px;border-radius:6px;margin:6px 0;font-size:13px;line-height:1.5">${m.message.substring(0, 120)}${m.message.length > 120 ? "..." : ""}</div>
-        <div class="mobile-card-detail">🕐 ${fmtDate(m.created_at)}</div>
-        ${!m.is_read ? `<div class="mobile-card-actions"><button class="btn btn-outline" onclick="markRead('${m.id}')">✓ Tandai Dibaca</button></div>` : ""}
-      </div>
-    `).join("");
-  }
-
-  async function markRead(id) {
-    await sb.from("contact_messages").update({ is_read: true }).eq("id", id);
-    loadMessages(); loadOverviewStats();
-  }
-
-  // ── HELPER ──
-  function escStr(str) {
-    return (str || "").replace(/'/g, "\\'").replace(/"/g, '\\"');
-  }
-
-  // ── DRAG & DROP ──
-  ["doc-dropzone","proj-dropzone"].forEach(id => {
-    const el = document.getElementById(id);
-    el.addEventListener("dragover", e => { e.preventDefault(); el.classList.add("dragover"); });
-    el.addEventListener("dragleave", () => el.classList.remove("dragover"));
-    el.addEventListener("drop", e => {
-      e.preventDefault(); el.classList.remove("dragover");
-      if (id === "doc-dropzone") {
-        document.getElementById("doc-file").files = e.dataTransfer.files;
-        onDocFileSelect(document.getElementById("doc-file"));
-      } else {
-        document.getElementById("proj-files").files = e.dataTransfer.files;
-        onProjFilesSelect(document.getElementById("proj-files"));
-      }
-    });
-  });
-</script>
-</body>
-</html>
+document.addEventListener("DOMContentLoaded", function() {
+  if (typeof initSupabase === "function") initSupabase();
+});
